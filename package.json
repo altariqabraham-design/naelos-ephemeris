@@ -1,0 +1,49 @@
+{
+  "name": "naelos-ephemeris",
+  "version": "0.1.0",
+  "description": "Planetary positions from NASA JPL DE440 and DE441, 13,200 BC to AD 17,191, in plain TypeScript: compact Chebyshev tables plus the IAU reductions to the apparent place.",
+  "license": "Apache-2.0",
+  "author": "Altariq Abraham, doing business as Apex Node",
+  "homepage": "https://naelos.ai/ephemeris",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/altariqabraham-design/naelos-ephemeris.git"
+  },
+  "bugs": "https://github.com/altariqabraham-design/naelos-ephemeris/issues",
+  "keywords": [
+    "ephemeris", "astronomy", "astrology", "planets", "jpl", "de440", "de441",
+    "chebyshev", "precession", "nutation", "houses", "eclipses"
+  ],
+  "type": "module",
+  "sideEffects": false,
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./data/*": "./data/*",
+    "./data-far/manifest.json": "./data-far/manifest.json"
+  },
+  "files": [
+    "dist",
+    "data",
+    "data-far/manifest.json",
+    "README.md",
+    "LICENSE",
+    "NOTICE"
+  ],
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "typecheck": "tsc -p tsconfig.json",
+    "test": "vitest run",
+    "prepublishOnly": "npm run typecheck && npm test && npm run build"
+  },
+  "devDependencies": {
+    "@types/node": "^22.16.5",
+    "typescript": "^5.8.3",
+    "vitest": "^3.2.4"
+  }
+}

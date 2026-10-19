@@ -1,0 +1,13 @@
+node_modules/
+dist/
+__pycache__/
+.venv/
+
+# The DE441 far tables (294 files, 162 MB) are published as release assets,
+# not committed; only their manifest and the five samples the tests read are.
+data-far/*.bin
+!data-far/ne-m13200.bin
+!data-far/ne-m0500.bin
+!data-far/ne-1500.bin
+!data-far/ne-2649.bin
+!data-far/ne-17100.bin

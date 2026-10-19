@@ -1,0 +1,28 @@
+Naelos Ephemeris
+Copyright 2026 Altariq Abraham, doing business as Apex Node
+
+Licensed under the Apache License, Version 2.0 (see LICENSE). The license
+grants no right to use the names "Naelos", "Naelos Ephemeris" or "Apex Node",
+except as needed to describe the origin of this work and reproduce this file.
+
+The tables in data/ and data-far/ are derived from works of the United States
+Government, which are in the public domain:
+
+  - the JPL planetary and lunar ephemerides DE440 and DE441 (Park, Folkner,
+    Williams & Boggs, "The JPL Planetary and Lunar Ephemerides DE440 and
+    DE441", The Astronomical Journal 161:105, 2021), NASA Jet Propulsion
+    Laboratory;
+  - the JPL Horizons orbit solutions for (2060) Chiron, (1) Ceres,
+    (2) Pallas, (3) Juno and (4) Vesta.
+
+Delta T is built from the IERS Earth orientation series (finals2000A.all,
+published by the US Naval Observatory), the splines of Morrison, Stephenson,
+Hohenkerk & Zawilski (2021) and the long-term parabola of Stephenson,
+Morrison & Hohenkerk (2016); its uncertainty before 1700 follows Morrison &
+Stephenson (2004). Precession, nutation and the fundamental arguments follow
+the published IAU 2006 / IAU 2000B models as adopted by the IERS Conventions
+(2003, 2010), and beyond 1550–2650 the long-term precession of Vondrák,
+Capitaine & Wallace (Astronomy & Astrophysics 534, A22, 2011; corrigendum
+541, C1, 2012).
+
+This work contains no code or data from Swiss Ephemeris.

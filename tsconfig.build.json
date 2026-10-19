@@ -1,0 +1,21 @@
+{
+  // The published build: plain ES2022 JavaScript with type declarations, so the
+  // package runs in Node, Deno, Bun and any bundler without a TypeScript step.
+  // The source imports its siblings with ".ts", as Deno needs;
+  // rewriteRelativeImportExtensions turns those into ".js" here.
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "lib": ["ES2022"],
+    "types": [],
+    "strict": true,
+    "rewriteRelativeImportExtensions": true,
+    "declaration": true,
+    "sourceMap": true,
+    "rootDir": "src",
+    "outDir": "dist",
+    "skipLibCheck": true
+  },
+  "include": ["src"]
+}

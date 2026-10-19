@@ -1,0 +1,7 @@
+# Build-time only: these produce and check the tables and constants. None of
+# them ships with the engine. Run every tool with `python -I`.
+numpy==2.3.4
+jplephem==2.23
+pyerfa==2.0.1.5
+skyfield==1.53
+spiceypy==6.0.0
