@@ -2,6 +2,9 @@ name: ci
 on:
   push:
   pull_request:
+# Read-only: the workflow only tests. (Security review, 2026-10-20.)
+permissions:
+  contents: read
 jobs:
   test:
     runs-on: ubuntu-latest
