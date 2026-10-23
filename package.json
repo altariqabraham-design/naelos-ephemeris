@@ -1,6 +1,6 @@
 {
   "name": "naelos-ephemeris",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Planetary positions from NASA JPL DE440 and DE441, 13,200 BC to AD 17,191, in plain TypeScript: compact Chebyshev tables plus the IAU reductions to the apparent place.",
   "license": "Apache-2.0",
   "author": "Altariq Abraham, doing business as Apex Node",

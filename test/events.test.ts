@@ -6,7 +6,7 @@
 import { describe, it, expect } from "vitest";
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
-import { NaelosEphemeris, julday, SEFLG_SPEED, SE_SUN, SE_MOON, SE_MERCURY, SE_MARS, SE_JUPITER, SE_SATURN, SE_TRUE_NODE, SE_OSCU_APOG } from "../src/index.ts";
+import { NaelosEphemeris, julday, SEFLG_SPEED, SE_SUN, SE_MOON, SE_MERCURY, SE_MARS, SE_JUPITER, SE_SATURN, SE_TRUE_NODE, SE_OSCU_APOG, norm360 } from "../src/index.ts";
 import { stations } from "../src/events.ts";
 
 const ROOT = resolve(__dirname, "..");
@@ -105,6 +105,23 @@ describe("ingresses, returns and lunations", () => {
     const back = eph.ingresses(SE_MERCURY, julday(2000, 1, 1), julday(2010, 1, 1)).filter((i) => i.direction === -1);
     expect(back.length).toBeGreaterThan(0);
     for (const i of back) expect(i.sign).toBe((Math.round(i.target / 30) + 11) % 12);
+  });
+
+  it("a body cast at its ingress moment is already in the sign it entered", () => {
+    // The search used to return the midpoint of its last bracket, which could
+    // fall a hair before the line: the 2026 Aries ingress cast at 359.9999999996°.
+    for (const body of [SE_SUN, SE_MOON, SE_MERCURY, SE_MARS, SE_JUPITER, SE_SATURN]) {
+      for (const i of eph.ingresses(body, julday(2000, 1, 1), julday(2030, 1, 1))) {
+        expect(Math.floor(lon(i.jd, body).longitude / 30) % 12).toBe(i.sign);
+      }
+    }
+  });
+
+  it("a lunation cast at its moment is already past the phase angle", () => {
+    for (const l of eph.lunations(julday(2000, 1, 1), julday(2030, 1, 1))) {
+      const e = norm360(lon(l.jd, SE_MOON).longitude - lon(l.jd, SE_SUN).longitude);
+      expect(Math.floor(e / 90) % 4).toBe(["new", "first quarter", "full", "last quarter"].indexOf(l.phase));
+    }
   });
 
   it("a solar return comes once a year, at the natal degree", () => {

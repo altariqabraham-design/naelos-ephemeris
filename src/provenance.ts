@@ -17,7 +17,7 @@ import { MEASURED_UNTIL, PREDICTED_UNTIL, deltaTUncertainty } from "./deltat.ts"
 import { FILES, NEAR_SOURCE, FAR_SOURCE } from "./generated/files.ts";
 import { iauWeight } from "./frames.ts";
 
-export const ENGINE = "Naelos Ephemeris 0.1.0";
+export const ENGINE = "Naelos Ephemeris 0.1.1";
 
 /** What each body is in JPL's numbering, and what it rests on. */
 const SOURCE: Record<number, { name: string; horizons: string; data: string }> = {

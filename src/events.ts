@@ -168,8 +168,19 @@ function root(g: (t: number) => number, a: number, b: number, ga: number, gb: nu
       side = 1;
     }
   }
-  return (a + b) / 2;
+  // The far side of the bracket, not its midpoint: g(b) > 0 throughout, so
+  // the moment returned is never before the crossing. The midpoint could be,
+  // and a chart cast there put the Sun at 359.9999999996° — 29°59′ Pisces in
+  // an Aries ingress chart, since every display floors.
+  return b;
 }
+
+/**
+ * Margin added past a crossing, in days (~0.09 s): enough that converting to
+ * UT and back (an ulp of a Julian date is ~4e-10 d) cannot land before the
+ * line, and far below the second any display shows.
+ */
+const PAST_CROSSING = 1e-6;
 
 /**
  * Every moment between `start` and `end` (TT) when the angle reaches any of
@@ -200,7 +211,7 @@ export function crossings(f: AngleFn, targets: number[], start: number, end: num
             const g = (x: number) => signed(f(x) - target) * dir;
             const ga = signed(fa - target) * dir, gb = signed(fb - target) * dir;
             const at = gb === 0 ? b : root(g, a, b, ga, gb);
-            out.push({ jdTT: at, target, direction: dir });
+            out.push({ jdTT: at + PAST_CROSSING, target, direction: dir });
           }
         }
       }
