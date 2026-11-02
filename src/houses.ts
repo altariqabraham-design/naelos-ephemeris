@@ -131,6 +131,32 @@ function ascendantAt(theta: number, phi: number, eps: number): number {
   return eclipticCrossing(s, s.zenith, s.east);
 }
 
+/**
+ * The classical "ascendant at a pole height": the ecliptic degree on the
+ * eastern horizon of a sphere of pole height `f`, where `x1` is the right
+ * ascension 90° east of the meridian (ARMC + 90° gives the Ascendant itself).
+ * Solved per quadrant, as in the tables of houses and in Swiss Ephemeris, so
+ * the branch it picks inside the polar circles is the one every program shows.
+ */
+function poleAscendant(x1: number, f: number, eps: number): number {
+  const x = norm360(x1);
+  const q = Math.floor(x / 90);
+  const a2 = (y: number, g: number) => {
+    const yr = y * D2R;
+    let den = -Math.tan(g) * Math.sin(eps) + Math.cos(eps) * Math.cos(yr);
+    const num = Math.sin(yr);
+    if (Math.abs(den) < 1e-15) den = 0;
+    if (Math.abs(num) < 1e-15) return den < 0 ? 180 : 0;
+    if (den === 0) return 90;
+    const r = Math.atan(num / den) * R2D;
+    return r < 0 ? 180 + r : r;
+  };
+  if (q === 0) return norm360(a2(x, f));
+  if (q === 1) return norm360(180 - a2(180 - x, -f));
+  if (q === 2) return norm360(180 + a2(x - 180, -f));
+  return norm360(360 - a2(360 - x, f));
+}
+
 /** Trisect each quadrant in longitude. Porphyry, and the polar fallback. */
 function porphyry(asc: number, mc: number): number[] {
   const c = new Array<number>(12);
@@ -216,9 +242,8 @@ function axial(s: Sky, asc: number, kind: "C" | "R"): number[] {
   // horizon. Everywhere outside the polar circles that is the Midheaven;
   // inside them the Midheaven can sit below the horizon, and the cusp is the
   // opposite point (as Swiss Ephemeris draws Campanus and Regiomontanus there).
-  // Every other cusp is likewise taken on its own circle's side of the sky.
-  // Swiss differs inside the polar circles for some Regiomontanus cusps; the
-  // geometry here is the definition.
+  // Campanus takes every other cusp on its own circle's side of the sky;
+  // Regiomontanus follows Swiss's construction below.
   c[9] = eclipticCrossing(s, s.east, s.zenith);
   const point = (a: number): Vec => {
     if (kind === "C") {
@@ -232,6 +257,26 @@ function axial(s: Sky, asc: number, kind: "C" | "R"): number[] {
     const ra = s.theta + a; // a east of the meridian, along the equator
     return [Math.cos(ra), Math.sin(ra), 0];
   };
+  if (kind === "R") {
+    // Regiomontanus as Swiss Ephemeris constructs it: each cusp is the
+    // Ascendant of the sky turned by its equator division, at the pole height
+    // of its circle (tan φ·sin 30° or tan φ·sin 60°). Outside the polar circles
+    // this is the same circle as the geometry below. Inside them, taking each
+    // cusp "on its own circle's side" put them out of order — a 2nd house 351°
+    // wide holding every planet — where this keeps them in sequence, as Swiss
+    // and every program built on it draw them.
+    const t = Math.tan(s.phi);
+    const fh1 = Math.atan(t * 0.5), fh2 = Math.atan((t * Math.sqrt(3)) / 2);
+    const th = s.theta * R2D;
+    // Where the Midheaven is below the horizon the 10th cusp is the IC point,
+    // and the cusps between it and the Ascendant turn with it.
+    const below = Math.abs(((c[9] - longitudeAtRA(s.theta, s.eps) + 540) % 360) - 180) > 90 ? 180 : 0;
+    c[10] = norm360(poleAscendant(th + 30, fh1, s.eps) + below);
+    c[11] = norm360(poleAscendant(th + 60, fh2, s.eps) + below);
+    c[1] = norm360(poleAscendant(th + 120, fh2, s.eps) + below);
+    c[2] = norm360(poleAscendant(th + 150, fh1, s.eps) + below);
+    return opposite(c);
+  }
   for (const [idx, deg] of [[10, 30], [11, 60], [1, 120], [2, 150]] as const) {
     const p = point(deg * D2R);
     c[idx] = eclipticCrossing(s, cross(s.north, p), p);
@@ -308,7 +353,12 @@ export function houses(jdUT: number, deltaTSeconds: number, lat: number, lon: nu
     cusps = porphyry(asc, mc);
     used = "O";
   }
-  return { cusps: cusps as number[], ascendant: asc, mc, armc: norm360(theta * R2D), vertex, equatorialAscendant, system: used, fallback };
+  // Campanus and Regiomontanus report their 10th cusp as the Midheaven: inside
+  // the polar circles, when the meridian's ecliptic degree is below the
+  // horizon, that cusp is the opposite point, and Swiss Ephemeris returns it
+  // as the MC for these two systems (only).
+  const shownMc = used === "C" || used === "R" ? (cusps as number[])[9] : mc;
+  return { cusps: cusps as number[], ascendant: asc, mc: shownMc, armc: norm360(theta * R2D), vertex, equatorialAscendant, system: used, fallback };
 }
 
 /** Right ascension of an ecliptic longitude, degrees — exposed for callers that need it. */
