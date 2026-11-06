@@ -94,6 +94,33 @@ describe("stations are where the body stands still", () => {
   });
 });
 
+describe("a station near either end of the window is still found", () => {
+  // Saturn stations direct at 23:31 UTC on 10 December 2026. A search ending
+  // at midnight missed it: a turn was only seen at an interior sample, and it
+  // fell in the last ten-day step.
+  const when = (s: { jd: number }) => Math.round((s.jd - julday(2026, 12, 10)) * 1440);
+  it("at the end", () => {
+    const st = eph.stations(SE_SATURN, julday(2026, 11, 1), julday(2026, 12, 11));
+    expect(st.map((s) => s.turning)).toEqual(["direct"]);
+    expect(Math.abs(when(st[0]) - (23 * 60 + 31))).toBeLessThanOrEqual(1);
+  });
+  it("at the start, and only what falls inside", () => {
+    const st = eph.stations(SE_SATURN, julday(2026, 12, 10, 23), julday(2027, 1, 20));
+    expect(st.map((s) => s.turning)).toEqual(["direct"]);
+    expect(eph.stations(SE_SATURN, julday(2026, 12, 11), julday(2027, 1, 20))).toEqual([]);
+  });
+  it("the same station whatever window holds it", () => {
+    const wide = eph.stations(SE_SATURN, julday(2026, 1, 1), julday(2028, 1, 1)).find((s) => Math.abs(s.jd - julday(2026, 12, 11)) < 2)!;
+    for (let d = 1; d <= 12; d++) {
+      const narrow = eph.stations(SE_SATURN, julday(2026, 12, d), julday(2026, 12, d + 1));
+      expect(narrow.length).toBe(d === 10 ? 1 : 0);
+      // A planet at its station barely moves, so its moment is only defined to
+      // a few seconds; every display shows the minute.
+      if (d === 10) expect(Math.abs(narrow[0].jd - wide.jd) * 86400).toBeLessThan(30);
+    }
+  });
+});
+
 describe("ingresses, returns and lunations", () => {
   it("the Sun enters each sign once a year, in order", () => {
     const ing = eph.ingresses(SE_SUN, julday(2025, 1, 1), julday(2026, 1, 1));

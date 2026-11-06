@@ -119,10 +119,22 @@ function track(f: AngleFn, start: number, end: number, step: number) {
   return { t, u };
 }
 
+/** Can the angle be read at this moment? Outside a body's tables it throws. */
+const readable = (f: AngleFn, jd: number) => {
+  try { return Number.isFinite(f(jd)); } catch { return false; }
+};
+
 /** Every station of an angle between `start` and `end` (TT). */
 export function stations(f: AngleFn, start: number, end: number, motion: Motion): Station[] {
   if (motion.monotone) return [];
-  const { t, u } = track(f, start, end, motion.step);
+  // A turn is seen only at an interior sample, so one inside the first or
+  // last step of the window was missed: Saturn's station direct at 23:31 UTC
+  // on 10 December 2026 vanished from a search ending at midnight. Track a
+  // step past each end, where the tables reach, and keep what falls inside.
+  const pad = motion.step;
+  const a = readable(f, start - pad) ? start - pad : start;
+  const b = readable(f, end + pad) ? end + pad : end;
+  const { t, u } = track(f, a, b, motion.step);
   const found: Station[] = [];
   for (let i = 1; i < t.length - 1; i++) {
     const before = u[i] - u[i - 1], after = u[i + 1] - u[i];
@@ -148,7 +160,7 @@ export function stations(f: AngleFn, start: number, end: number, motion: Motion)
     if (k < 0) break;
     found.splice(k, 2);
   }
-  return found;
+  return found.filter((s) => s.jdTT >= start && s.jdTT <= end);
 }
 
 /** Illinois (regula falsi) root of g on [a, b], given g(a) and g(b) of opposite sign. */
